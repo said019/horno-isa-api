@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Horno ISA — Panel de Control</title>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=DM+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet">
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     :root {
       --bg: #0a0c10;
@@ -35,52 +44,104 @@
     body::before {
       content: '';
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background:
-        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(249,115,22,0.06) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 50% at 80% 100%, rgba(59,130,246,0.04) 0%, transparent 70%);
+        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(249, 115, 22, 0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 50% at 80% 100%, rgba(59, 130, 246, 0.04) 0%, transparent 70%);
       pointer-events: none;
       z-index: 0;
     }
 
-    .app { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; padding: 20px 16px 40px; }
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
 
     /* Header */
     .header {
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding: 16px 0 24px;
     }
-    .header-left { display: flex; align-items: center; gap: 12px; }
-    .logo {
-      width: 36px; height: 36px; border-radius: 10px;
-      background: linear-gradient(135deg, var(--accent), #dc5c10);
-      display: grid; place-items: center;
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 700; font-size: 14px; color: #fff;
-      box-shadow: 0 4px 16px rgba(249,115,22,0.3);
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-    .header h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
-    .header h1 span { color: var(--text-dim); font-weight: 400; }
+
+    .logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #dc5c10);
+      display: grid;
+      place-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(249, 115, 22, 0.3);
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    .header h1 span {
+      color: var(--text-dim);
+      font-weight: 400;
+    }
 
     .status-badge {
-      display: flex; align-items: center; gap: 6px;
-      padding: 6px 12px; border-radius: 20px;
-      background: var(--surface-2); border: 1px solid var(--border);
-      font-size: 12px; font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 500;
       font-family: 'JetBrains Mono', monospace;
-      text-transform: uppercase; letter-spacing: 0.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
+
     .status-dot {
-      width: 7px; height: 7px; border-radius: 50%;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
       background: var(--green);
-      box-shadow: 0 0 8px rgba(34,197,94,0.5);
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
       animation: pulse-dot 2s ease-in-out infinite;
     }
-    .status-dot.offline { background: var(--red); box-shadow: 0 0 8px rgba(239,68,68,0.5); animation: none; }
+
+    .status-dot.offline {
+      background: var(--red);
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+      animation: none;
+    }
 
     @keyframes pulse-dot {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.4;
+      }
     }
 
     /* Cards */
@@ -91,143 +152,364 @@
       padding: 20px;
       margin-bottom: 12px;
     }
+
     .card-label {
-      font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
-      color: var(--text-dim); font-weight: 600; margin-bottom: 12px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      font-weight: 600;
+      margin-bottom: 12px;
       font-family: 'JetBrains Mono', monospace;
     }
 
     /* Temperature Display */
     .temp-main {
-      display: flex; align-items: baseline; gap: 4px;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
       margin-bottom: 4px;
     }
+
     .temp-value {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 56px; font-weight: 700; line-height: 1;
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1;
       letter-spacing: -2px;
       background: linear-gradient(180deg, #fff 40%, var(--accent) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       background-clip: text;
     }
+
     .temp-unit {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 20px; color: var(--text-dim); font-weight: 300;
+      font-size: 20px;
+      color: var(--text-dim);
+      font-weight: 300;
     }
+
     .temp-target {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 14px; color: var(--text-dim);
+      font-size: 14px;
+      color: var(--text-dim);
     }
-    .temp-target b { color: var(--accent); font-weight: 600; }
+
+    .temp-target b {
+      color: var(--accent);
+      font-weight: 600;
+    }
 
     /* Stats Row */
-    .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-    .stat {
-      text-align: center; padding: 14px 8px;
-      background: var(--surface-2); border-radius: 10px;
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
     }
+
+    .stat {
+      text-align: center;
+      padding: 14px 8px;
+      background: var(--surface-2);
+      border-radius: 10px;
+    }
+
     .stat-val {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 22px; font-weight: 700; margin-bottom: 2px;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 2px;
     }
-    .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
 
-    .stat-val.power { color: var(--accent); }
-    .stat-val.status-text { font-size: 12px; line-height: 1.4; }
-    .status-CALENTANDO { color: var(--red); }
-    .status-ENFRIANDO { color: var(--blue); }
-    .status-ESTABILIZANDO { color: var(--green); }
-    .status-APAGADO { color: var(--text-dim); }
-    .status-ERR { color: var(--yellow); }
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-val.power {
+      color: var(--accent);
+    }
+
+    .stat-val.status-text {
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .status-CALENTANDO {
+      color: var(--red);
+    }
+
+    .status-ENFRIANDO {
+      color: var(--blue);
+    }
+
+    .status-ESTABILIZANDO {
+      color: var(--green);
+    }
+
+    .status-APAGADO {
+      color: var(--text-dim);
+    }
+
+    .status-ERR {
+      color: var(--yellow);
+    }
 
     /* Slider */
-    .slider-wrap { margin-top: 4px; }
-    .slider-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+    .slider-wrap {
+      margin-top: 4px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 14px;
+    }
+
     .slider-val {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 28px; font-weight: 700; color: var(--accent);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
     }
 
     input[type="range"] {
-      -webkit-appearance: none; appearance: none;
-      width: 100%; height: 8px; border-radius: 4px;
-      background: var(--surface-2); outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--surface-2);
+      outline: none;
       cursor: pointer;
     }
+
     input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; appearance: none;
-      width: 28px; height: 28px; border-radius: 50%;
+      -webkit-appearance: none;
+      appearance: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
       background: var(--accent);
       border: 3px solid var(--bg);
-      box-shadow: 0 2px 12px rgba(249,115,22,0.4);
+      box-shadow: 0 2px 12px rgba(249, 115, 22, 0.4);
       cursor: pointer;
       transition: transform 0.15s ease;
     }
-    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
     input[type="range"]::-moz-range-thumb {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: var(--accent); border: 3px solid var(--bg);
-      box-shadow: 0 2px 12px rgba(249,115,22,0.4);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 3px solid var(--bg);
+      box-shadow: 0 2px 12px rgba(249, 115, 22, 0.4);
       cursor: pointer;
     }
 
     /* Buttons */
-    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
-    .btn {
-      padding: 14px; border: none; border-radius: 10px;
-      font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
-      cursor: pointer; transition: all 0.2s ease;
-      text-transform: uppercase; letter-spacing: 0.5px;
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
     }
+
+    .btn {
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
     .btn-primary {
       background: linear-gradient(135deg, var(--accent), #dc5c10);
       color: #fff;
-      box-shadow: 0 4px 20px rgba(249,115,22,0.3);
+      box-shadow: 0 4px 20px rgba(249, 115, 22, 0.3);
     }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(249,115,22,0.4); }
-    .btn-primary:active { transform: translateY(0); }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(249, 115, 22, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
     .btn-danger {
-      background: var(--surface-2); color: var(--red);
-      border: 1px solid rgba(239,68,68,0.3);
+      background: var(--surface-2);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, 0.3);
     }
-    .btn-danger:hover { background: rgba(239,68,68,0.1); border-color: var(--red); }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: var(--red);
+    }
 
     /* Chart */
-    .chart-container { position: relative; height: 180px; margin-top: 8px; overflow: hidden; border-radius: 8px; background: var(--surface-2); }
-    canvas { width: 100% !important; height: 100% !important; }
+    .chart-container {
+      position: relative;
+      height: 180px;
+      margin-top: 8px;
+      overflow: hidden;
+      border-radius: 8px;
+      background: var(--surface-2);
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
 
     /* Log */
     .log {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; color: var(--text-dim);
-      max-height: 120px; overflow-y: auto;
-      background: var(--surface-2); border-radius: 8px;
-      padding: 12px; margin-top: 8px; line-height: 1.8;
+      font-size: 11px;
+      color: var(--text-dim);
+      max-height: 120px;
+      overflow-y: auto;
+      background: var(--surface-2);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 8px;
+      line-height: 1.8;
     }
-    .log::-webkit-scrollbar { width: 4px; }
-    .log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .log::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .log::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
+    }
 
     /* Timer Input */
-    .timer-row { display: flex; align-items: center; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
-    .timer-input-group { flex: 1; position: relative; }
-    .timer-input {
-      width: 100%; padding: 12px 16px; border-radius: 8px;
-      background: var(--surface-2); border: 1px solid var(--border);
-      color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 14px;
-      outline: none; transition: border-color 0.2s;
+    .timer-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
     }
-    .timer-input:focus { border-color: var(--accent); }
-    .timer-unit { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 12px; }
+
+    .timer-input-group {
+      flex: 1;
+      position: relative;
+    }
+
+    .timer-input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .timer-input:focus {
+      border-color: var(--accent);
+    }
+
+    .timer-unit {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+
+    /* PID Row */
+    .pid-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 80px;
+      gap: 8px;
+      margin-top: 12px;
+      align-items: end;
+    }
+
+    .pid-input-group label {
+      display: block;
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .pid-input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      outline: none;
+    }
+
+    /* Recovery Notification */
+    .recovery-banner {
+      display: none;
+      background: rgba(249, 115, 22, 0.1);
+      border: 1px solid var(--accent);
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .recovery-banner.active {
+      display: flex;
+    }
 
     /* Responsive */
     @media (max-width: 400px) {
-      .temp-value { font-size: 44px; }
-      .stat-val { font-size: 18px; }
+      .temp-value {
+        font-size: 44px;
+      }
+
+      .stat-val {
+        font-size: 18px;
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="app">
+    <!-- Recovery Banner -->
+    <div id="recoveryBanner" class="recovery-banner">
+      <span>⚙️ Se detectó un reinicio del servidor. ¿Restaurar objetivo anterior (<b id="oldTargetVal">--</b>°C)?</span>
+      <button class="btn btn-primary" style="padding: 6px 12px; font-size: 11px;"
+        onclick="restoreSession()">Restaurar</button>
+    </div>
+
     <!-- Header -->
     <div class="header">
       <div class="header-left">
@@ -273,7 +555,7 @@
         <div class="slider-val" id="sliderVal">35 °C</div>
       </div>
       <div class="slider-wrap">
-        <input type="range" id="tempSlider" min="0" max="200" value="35" step="1">
+        <input type="range" id="tempSlider" min="0" max="100" value="35" step="0.5">
       </div>
       <div class="btn-row">
         <button class="btn btn-primary" onclick="setTarget()">Aplicar</button>
@@ -286,7 +568,25 @@
           <input type="number" id="timerHours" class="timer-input" placeholder="0.0" step="0.1" min="0">
           <span class="timer-unit">Horas</span>
         </div>
-        <button class="btn btn-primary" style="padding: 12px 20px; font-size: 12px;" onclick="setTimer()">Set Timer</button>
+        <button class="btn btn-primary" style="padding: 12px 20px; font-size: 12px;" onclick="setTimer()">Set
+          Timer</button>
+      </div>
+
+      <!-- PID Control -->
+      <div class="pid-row" style="margin-top:20px; border-top: 1px solid var(--border); padding-top:16px;">
+        <div class="pid-input-group">
+          <label>Kp</label>
+          <input type="number" id="kpInput" class="pid-input" value="2.0" step="0.1">
+        </div>
+        <div class="pid-input-group">
+          <label>Ki</label>
+          <input type="number" id="kiInput" class="pid-input" value="0.5" step="0.1">
+        </div>
+        <div class="pid-input-group">
+          <label>Kd</label>
+          <input type="number" id="kdInput" class="pid-input" value="1.0" step="0.1">
+        </div>
+        <button class="btn btn-primary" style="padding: 8px; font-size: 10px;" onclick="setPID()">Set PID</button>
       </div>
     </div>
 
@@ -357,7 +657,7 @@
       ctx.beginPath();
       for (let i = 0; i < targetHistory.length; i++) {
         i === 0 ? ctx.moveTo(x(i + MAX_POINTS - targetHistory.length), y(targetHistory[i]))
-                 : ctx.lineTo(x(i + MAX_POINTS - targetHistory.length), y(targetHistory[i]));
+          : ctx.lineTo(x(i + MAX_POINTS - targetHistory.length), y(targetHistory[i]));
       }
       ctx.stroke();
       ctx.setLineDash([]);
@@ -371,7 +671,7 @@
       const startIdx = MAX_POINTS - tempHistory.length;
       for (let i = 0; i < tempHistory.length; i++) {
         i === 0 ? ctx.moveTo(x(i + startIdx), y(tempHistory[i]))
-                 : ctx.lineTo(x(i + startIdx), y(tempHistory[i]));
+          : ctx.lineTo(x(i + startIdx), y(tempHistory[i]));
       }
       ctx.lineTo(x(MAX_POINTS - 1), h - pad.bottom);
       ctx.lineTo(x(startIdx), h - pad.bottom);
@@ -383,7 +683,7 @@
       ctx.beginPath();
       for (let i = 0; i < tempHistory.length; i++) {
         i === 0 ? ctx.moveTo(x(i + startIdx), y(tempHistory[i]))
-                 : ctx.lineTo(x(i + startIdx), y(tempHistory[i]));
+          : ctx.lineTo(x(i + startIdx), y(tempHistory[i]));
       }
       ctx.strokeStyle = '#f97316';
       ctx.lineWidth = 2;
@@ -415,19 +715,51 @@
 
     // ── API Calls ──
     function setTarget() {
+      const val = parseFloat(slider.value);
       fetch('/api/setTarget', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetTemp: parseFloat(slider.value) })
-      }).then(() => addLog('Objetivo enviado: ' + slider.value + ' °C'))
-        .catch(() => addLog('Error al enviar objetivo'));
+        body: JSON.stringify({ targetTemp: val })
+      }).then(r => r.json().then(data => ({ status: r.status, data })))
+        .then(({ status, data }) => {
+          if (status === 200) {
+            addLog('Objetivo enviado: ' + val + ' °C');
+            localStorage.setItem('lastTarget', val);
+            document.getElementById('recoveryBanner').classList.remove('active');
+          } else {
+            addLog('⚠️ Error: ' + (data.error || 'No se pudo enviar'));
+            alert(data.error || 'Error al enviar objetivo');
+          }
+        })
+        .catch(() => addLog('Error de conexión al enviar objetivo'));
+    }
+
+    function setPID() {
+      const kp = document.getElementById('kpInput').value;
+      const ki = document.getElementById('kiInput').value;
+      const kd = document.getElementById('kdInput').value;
+      fetch('/api/setPID', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kp, ki, kd })
+      }).then(() => addLog('Parámetros PID actualizados'))
+        .catch(() => addLog('Error al actualizar PID'));
+    }
+
+    function restoreSession() {
+      const old = localStorage.getItem('lastTarget');
+      if (old) {
+        slider.value = old;
+        sliderVal.textContent = old + ' °C';
+        setTarget();
+      }
     }
 
     function stopSystem() {
       fetch('/api/stop', { method: 'POST' })
-        .then(() => { 
-          addLog('⏹ Sistema apagado'); 
-          slider.value = 0; 
+        .then(() => {
+          addLog('⏹ Sistema apagado');
+          slider.value = 0;
           sliderVal.textContent = '0 °C';
           document.getElementById('timerHours').value = '';
         })
@@ -487,6 +819,18 @@
             elapsedText.style.color = 'var(--text)';
           }
 
+          // Manual update of PID inputs if they changed on server (only if not focused)
+          if (document.activeElement !== document.getElementById('kpInput')) document.getElementById('kpInput').value = data.kp;
+          if (document.activeElement !== document.getElementById('kiInput')) document.getElementById('kiInput').value = data.ki;
+          if (document.activeElement !== document.getElementById('kdInput')) document.getElementById('kdInput').value = data.kd;
+
+          // Recovery Detection
+          const savedTarget = localStorage.getItem('lastTarget');
+          if (savedTarget && Math.abs(data.targetTemp - 35.0) < 0.1 && Math.abs(parseFloat(savedTarget) - 35.0) > 0.1) {
+            document.getElementById('recoveryBanner').classList.add('active');
+            document.getElementById('oldTargetVal').textContent = savedTarget;
+          }
+
           // Chart data
           tempHistory.push(data.currentTemp);
           targetHistory.push(data.targetTemp);
@@ -521,4 +865,5 @@
     fetchData();
   </script>
 </body>
+
 </html>
