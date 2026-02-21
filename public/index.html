@@ -207,6 +207,18 @@
     .log::-webkit-scrollbar { width: 4px; }
     .log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
+    /* Timer Input */
+    .timer-row { display: flex; align-items: center; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .timer-input-group { flex: 1; position: relative; }
+    .timer-input {
+      width: 100%; padding: 12px 16px; border-radius: 8px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 14px;
+      outline: none; transition: border-color 0.2s;
+    }
+    .timer-input:focus { border-color: var(--accent); }
+    .timer-unit { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 12px; }
+
     /* Responsive */
     @media (max-width: 400px) {
       .temp-value { font-size: 44px; }
@@ -266,6 +278,15 @@
       <div class="btn-row">
         <button class="btn btn-primary" onclick="setTarget()">Aplicar</button>
         <button class="btn btn-danger" onclick="stopSystem()">⏹ Apagar</button>
+      </div>
+
+      <!-- Temporizador -->
+      <div class="timer-row">
+        <div class="timer-input-group">
+          <input type="number" id="timerHours" class="timer-input" placeholder="0.0" step="0.1" min="0">
+          <span class="timer-unit">Horas</span>
+        </div>
+        <button class="btn btn-primary" style="padding: 12px 20px; font-size: 12px;" onclick="setTimer()">Set Timer</button>
       </div>
     </div>
 
@@ -404,8 +425,30 @@
 
     function stopSystem() {
       fetch('/api/stop', { method: 'POST' })
-        .then(() => { addLog('⏹ Sistema apagado'); slider.value = 0; sliderVal.textContent = '0 °C'; })
+        .then(() => { 
+          addLog('⏹ Sistema apagado'); 
+          slider.value = 0; 
+          sliderVal.textContent = '0 °C';
+          document.getElementById('timerHours').value = '';
+        })
         .catch(() => addLog('Error al detener'));
+    }
+
+    function setTimer() {
+      const hours = document.getElementById('timerHours').value;
+      fetch('/api/setTimer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hours: parseFloat(hours) })
+      }).then(r => r.json())
+        .then(data => {
+          if (hours > 0) {
+            addLog('⏲ Temporizador iniciado: ' + hours + ' horas');
+          } else {
+            addLog('⏲ Temporizador detenido');
+          }
+        })
+        .catch(() => addLog('Error al configurar temporizador'));
     }
 
     // ── Polling ──
@@ -428,11 +471,21 @@
           statusEl.textContent = data.status;
           statusEl.className = 'stat-val status-text status-' + (data.status.startsWith('ERR') ? 'ERR' : data.status);
 
-          // Elapsed timer
-          const elapsed = Math.floor((Date.now() - startTime) / 1000);
-          const mins = Math.floor(elapsed / 60);
-          const secs = String(elapsed % 60).padStart(2, '0');
-          document.getElementById('elapsedVal').textContent = mins + ':' + secs;
+          // Timer / Elapsed display
+          const elapsedText = document.getElementById('elapsedVal');
+          if (data.timerActive && data.remainingTime > 0) {
+            const h = Math.floor(data.remainingTime / 3600);
+            const m = Math.floor((data.remainingTime % 3600) / 60);
+            const s = data.remainingTime % 60;
+            elapsedText.textContent = (h > 0 ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+            elapsedText.style.color = 'var(--accent)';
+          } else {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const mins = Math.floor(elapsed / 60);
+            const secs = String(elapsed % 60).padStart(2, '0');
+            elapsedText.textContent = mins + ':' + secs;
+            elapsedText.style.color = 'var(--text)';
+          }
 
           // Chart data
           tempHistory.push(data.currentTemp);
