@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Horno ISA — Panel de Control</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0c10;
+      --surface: #12151c;
+      --surface-2: #1a1e28;
+      --border: #252a36;
+      --text: #e8eaf0;
+      --text-dim: #6b7280;
+      --accent: #f97316;
+      --accent-glow: rgba(249, 115, 22, 0.15);
+      --green: #22c55e;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --yellow: #eab308;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(249,115,22,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 50% at 80% 100%, rgba(59,130,246,0.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; padding: 20px 16px 40px; }
+
+    /* Header */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 0 24px;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #dc5c10);
+      display: grid; place-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700; font-size: 14px; color: #fff;
+      box-shadow: 0 4px 16px rgba(249,115,22,0.3);
+    }
+    .header h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+    .header h1 span { color: var(--text-dim); font-weight: 400; }
+
+    .status-badge {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 20px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      font-size: 12px; font-weight: 500;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px rgba(34,197,94,0.5);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    .status-dot.offline { background: var(--red); box-shadow: 0 0 8px rgba(239,68,68,0.5); animation: none; }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 12px;
+    }
+    .card-label {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--text-dim); font-weight: 600; margin-bottom: 12px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Temperature Display */
+    .temp-main {
+      display: flex; align-items: baseline; gap: 4px;
+      margin-bottom: 4px;
+    }
+    .temp-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 56px; font-weight: 700; line-height: 1;
+      letter-spacing: -2px;
+      background: linear-gradient(180deg, #fff 40%, var(--accent) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .temp-unit {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px; color: var(--text-dim); font-weight: 300;
+    }
+    .temp-target {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px; color: var(--text-dim);
+    }
+    .temp-target b { color: var(--accent); font-weight: 600; }
+
+    /* Stats Row */
+    .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .stat {
+      text-align: center; padding: 14px 8px;
+      background: var(--surface-2); border-radius: 10px;
+    }
+    .stat-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px; font-weight: 700; margin-bottom: 2px;
+    }
+    .stat-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .stat-val.power { color: var(--accent); }
+    .stat-val.status-text { font-size: 12px; line-height: 1.4; }
+    .status-CALENTANDO { color: var(--red); }
+    .status-ENFRIANDO { color: var(--blue); }
+    .status-ESTABILIZANDO { color: var(--green); }
+    .status-APAGADO { color: var(--text-dim); }
+    .status-ERR { color: var(--yellow); }
+
+    /* Slider */
+    .slider-wrap { margin-top: 4px; }
+    .slider-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+    .slider-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 28px; font-weight: 700; color: var(--accent);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 8px; border-radius: 4px;
+      background: var(--surface-2); outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--accent);
+      border: 3px solid var(--bg);
+      box-shadow: 0 2px 12px rgba(249,115,22,0.4);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+    input[type="range"]::-moz-range-thumb {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--accent); border: 3px solid var(--bg);
+      box-shadow: 0 2px 12px rgba(249,115,22,0.4);
+      cursor: pointer;
+    }
+
+    /* Buttons */
+    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+    .btn {
+      padding: 14px; border: none; border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s ease;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #dc5c10);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(249,115,22,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(249,115,22,0.4); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-danger {
+      background: var(--surface-2); color: var(--red);
+      border: 1px solid rgba(239,68,68,0.3);
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.1); border-color: var(--red); }
+
+    /* Chart */
+    .chart-container { position: relative; height: 180px; margin-top: 8px; overflow: hidden; border-radius: 8px; background: var(--surface-2); }
+    canvas { width: 100% !important; height: 100% !important; }
+
+    /* Log */
+    .log {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--text-dim);
+      max-height: 120px; overflow-y: auto;
+      background: var(--surface-2); border-radius: 8px;
+      padding: 12px; margin-top: 8px; line-height: 1.8;
+    }
+    .log::-webkit-scrollbar { width: 4px; }
+    .log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* Responsive */
+    @media (max-width: 400px) {
+      .temp-value { font-size: 44px; }
+      .stat-val { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">H</div>
+        <h1>Horno ISA <span>— v1.0</span></h1>
+      </div>
+      <div class="status-badge">
+        <div class="status-dot" id="connDot"></div>
+        <span id="connLabel">ONLINE</span>
+      </div>
+    </div>
+
+    <!-- Temperatura Actual -->
+    <div class="card">
+      <div class="card-label">Temperatura Actual</div>
+      <div class="temp-main">
+        <span class="temp-value" id="currentTemp">--.-</span>
+        <span class="temp-unit">°C</span>
+      </div>
+      <div class="temp-target">Objetivo: <b id="targetDisplay">35.0</b> °C</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="card stat">
+        <div class="stat-val power" id="powerVal">0%</div>
+        <div class="stat-label">Potencia</div>
+      </div>
+      <div class="card stat">
+        <div class="stat-val status-text" id="statusVal">APAGADO</div>
+        <div class="stat-label">Estado</div>
+      </div>
+      <div class="card stat">
+        <div class="stat-val" id="elapsedVal">0:00</div>
+        <div class="stat-label">Tiempo</div>
+      </div>
+    </div>
+
+    <!-- Control Slider -->
+    <div class="card">
+      <div class="slider-header">
+        <div class="card-label" style="margin-bottom:0">Temperatura Objetivo</div>
+        <div class="slider-val" id="sliderVal">35 °C</div>
+      </div>
+      <div class="slider-wrap">
+        <input type="range" id="tempSlider" min="0" max="200" value="35" step="1">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="setTarget()">Aplicar</button>
+        <button class="btn btn-danger" onclick="stopSystem()">⏹ Apagar</button>
+      </div>
+    </div>
+
+    <!-- Gráfica -->
+    <div class="card">
+      <div class="card-label">Historial de Temperatura</div>
+      <div class="chart-container">
+        <canvas id="chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="card">
+      <div class="card-label">Registro</div>
+      <div class="log" id="logBox">Esperando datos del ESP32...</div>
+    </div>
+  </div>
+
+  <script>
+    // ── Chart (canvas manual, zero dependencies) ──
+    const canvas = document.getElementById('chart');
+    const ctx = canvas.getContext('2d');
+    const MAX_POINTS = 60;
+    let tempHistory = [];
+    let targetHistory = [];
+    let startTime = Date.now();
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width * 2;
+      canvas.height = rect.height * 2;
+      ctx.scale(2, 2);
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    function drawChart() {
+      const w = canvas.width / 2;
+      const h = canvas.height / 2;
+      ctx.clearRect(0, 0, w, h);
+
+      if (tempHistory.length < 2) return;
+
+      const allVals = [...tempHistory, ...targetHistory];
+      let minV = Math.min(...allVals) - 5;
+      let maxV = Math.max(...allVals) + 5;
+      if (maxV - minV < 10) { minV -= 5; maxV += 5; }
+
+      const pad = { top: 10, bottom: 20, left: 0, right: 0 };
+      const cw = w - pad.left - pad.right;
+      const ch = h - pad.top - pad.bottom;
+
+      function x(i) { return pad.left + (i / (MAX_POINTS - 1)) * cw; }
+      function y(v) { return pad.top + ch - ((v - minV) / (maxV - minV)) * ch; }
+
+      // Grid lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 5; i++) {
+        const gy = pad.top + (ch / 4) * i;
+        ctx.beginPath(); ctx.moveTo(pad.left, gy); ctx.lineTo(w - pad.right, gy); ctx.stroke();
+      }
+
+      // Target line
+      ctx.strokeStyle = 'rgba(249,115,22,0.3)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      for (let i = 0; i < targetHistory.length; i++) {
+        i === 0 ? ctx.moveTo(x(i + MAX_POINTS - targetHistory.length), y(targetHistory[i]))
+                 : ctx.lineTo(x(i + MAX_POINTS - targetHistory.length), y(targetHistory[i]));
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Temp gradient fill
+      const grad = ctx.createLinearGradient(0, pad.top, 0, h - pad.bottom);
+      grad.addColorStop(0, 'rgba(249,115,22,0.15)');
+      grad.addColorStop(1, 'rgba(249,115,22,0.0)');
+
+      ctx.beginPath();
+      const startIdx = MAX_POINTS - tempHistory.length;
+      for (let i = 0; i < tempHistory.length; i++) {
+        i === 0 ? ctx.moveTo(x(i + startIdx), y(tempHistory[i]))
+                 : ctx.lineTo(x(i + startIdx), y(tempHistory[i]));
+      }
+      ctx.lineTo(x(MAX_POINTS - 1), h - pad.bottom);
+      ctx.lineTo(x(startIdx), h - pad.bottom);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Temp line
+      ctx.beginPath();
+      for (let i = 0; i < tempHistory.length; i++) {
+        i === 0 ? ctx.moveTo(x(i + startIdx), y(tempHistory[i]))
+                 : ctx.lineTo(x(i + startIdx), y(tempHistory[i]));
+      }
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 2;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      // Current value dot
+      if (tempHistory.length > 0) {
+        const lastI = MAX_POINTS - 1;
+        const lastV = tempHistory[tempHistory.length - 1];
+        ctx.beginPath();
+        ctx.arc(x(lastI), y(lastV), 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#f97316';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x(lastI), y(lastV), 7, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(249,115,22,0.3)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    // ── Slider ──
+    const slider = document.getElementById('tempSlider');
+    const sliderVal = document.getElementById('sliderVal');
+    slider.addEventListener('input', () => {
+      sliderVal.textContent = slider.value + ' °C';
+    });
+
+    // ── API Calls ──
+    function setTarget() {
+      fetch('/api/setTarget', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetTemp: parseFloat(slider.value) })
+      }).then(() => addLog('Objetivo enviado: ' + slider.value + ' °C'))
+        .catch(() => addLog('Error al enviar objetivo'));
+    }
+
+    function stopSystem() {
+      fetch('/api/stop', { method: 'POST' })
+        .then(() => { addLog('⏹ Sistema apagado'); slider.value = 0; sliderVal.textContent = '0 °C'; })
+        .catch(() => addLog('Error al detener'));
+    }
+
+    // ── Polling ──
+    let lastStatus = '';
+    let failCount = 0;
+
+    function fetchData() {
+      fetch('/api/data')
+        .then(r => r.json())
+        .then(data => {
+          failCount = 0;
+          document.getElementById('connDot').classList.remove('offline');
+          document.getElementById('connLabel').textContent = 'ONLINE';
+
+          document.getElementById('currentTemp').textContent = data.currentTemp.toFixed(1);
+          document.getElementById('targetDisplay').textContent = data.targetTemp.toFixed(1);
+          document.getElementById('powerVal').textContent = data.power + '%';
+
+          const statusEl = document.getElementById('statusVal');
+          statusEl.textContent = data.status;
+          statusEl.className = 'stat-val status-text status-' + (data.status.startsWith('ERR') ? 'ERR' : data.status);
+
+          // Elapsed timer
+          const elapsed = Math.floor((Date.now() - startTime) / 1000);
+          const mins = Math.floor(elapsed / 60);
+          const secs = String(elapsed % 60).padStart(2, '0');
+          document.getElementById('elapsedVal').textContent = mins + ':' + secs;
+
+          // Chart data
+          tempHistory.push(data.currentTemp);
+          targetHistory.push(data.targetTemp);
+          if (tempHistory.length > MAX_POINTS) tempHistory.shift();
+          if (targetHistory.length > MAX_POINTS) targetHistory.shift();
+          drawChart();
+
+          // Log status changes
+          if (data.status !== lastStatus) {
+            addLog('Estado → ' + data.status + ' | ' + data.currentTemp.toFixed(1) + '°C | P:' + data.power + '%');
+            lastStatus = data.status;
+          }
+        })
+        .catch(() => {
+          failCount++;
+          if (failCount > 3) {
+            document.getElementById('connDot').classList.add('offline');
+            document.getElementById('connLabel').textContent = 'OFFLINE';
+          }
+        });
+    }
+
+    function addLog(msg) {
+      const box = document.getElementById('logBox');
+      const time = new Date().toLocaleTimeString('es-MX');
+      box.innerHTML += '<br>[' + time + '] ' + msg;
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // Poll every 1s
+    setInterval(fetchData, 1000);
+    fetchData();
+  </script>
+</body>
+</html>
